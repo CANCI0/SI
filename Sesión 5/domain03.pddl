@@ -1,0 +1,111 @@
+(define (domain typed-blocksworld)
+    (:requirements :typing)
+    (:types block hand
+    )
+    (:predicates
+        (clear ?b - block)
+        (on-table ?b - block)
+        (empty ?h - hand)
+        (holding ?h - hand ?b - block)
+        (on ?b1 ?b2 - block)
+    )
+    (:action pickup
+        :parameters (?h - hand ?b - block)
+        :precondition (and (clear ?b) (on-table ?b) (empty ?h))
+        :effect (and (holding ?h ?b) (not (clear ?b)) (not (on-table ?b))
+            (not (empty ?h)))
+    )
+    (:action putdown
+        :parameters (?h - hand ?b - block)
+        :precondition (holding ?h ?b)
+        :effect (and (clear ?b) (empty ?h) (on-table ?b)
+            (not (holding ?h ?b)))
+    )
+    (:action stack
+        :parameters (?h - hand ?b ?underb - block)
+        :precondition (and (clear ?underb) (holding ?h ?b))
+        :effect (and (empty ?h) (clear ?b) (on ?b ?underb)
+            (not (clear ?underb)) (not (holding ?h ?b)))
+    )
+    (:action unstack
+        :parameters (?h - hand ?b ?underb - block)
+        :precondition (and (on ?b ?underb) (clear ?b) (empty ?h))
+        :effect (and (holding ?h ?b) (clear ?underb)
+            (not (on ?b ?underb)) (not (clear ?b)) (not (empty ?h)))
+    )
+)
+(define (problem typed-blocks1)
+    (:domain typed-blocksworld)
+    (:requirements :typing)
+    (:objects
+        H - hand
+        A B C - block
+    )
+    (:init
+        (clear A)
+        (on A B)
+        (on B C)
+        (on-table C)
+        (empty H)
+    )
+    (:goal
+        (and (on C B) (on B A))
+    )
+) Figure 3: Example blocksworld domain and problem for Typed STRIPS. 6
+(define (domain untyped-blocksworld)
+    (:predicates
+        (clear ?b)
+        (on-table ?b)
+        (empty ?h)
+        (holding ?h ?b)
+        (on ?b1 ?b2)
+        (hand ?h)
+        (block ?b)
+    )
+    (:action pickup
+        :parameters (?h ?b)
+        :precondition (and (hand ?h) (block ?b) (clear ?b) (on-table ?b) (empty ?h))
+        :effect (and (holding ?h ?b) (not (clear ?b)) (not (on-table ?b))
+            (not (empty ?h)))
+    )
+    (:action putdown
+        :parameters (?h ?b)
+        :precondition (and (hand ?h) (block ?b) (holding ?h ?b))
+        :effect (and (clear ?b) (empty ?h) (on-table ?b)
+            (not (holding ?h ?b)))
+    )
+    (:action stack
+        :parameters (?h ?b ?underb)
+        :precondition (and (hand ?h) (block ?b) (block ?underb)
+            (clear ?underb) (holding ?h ?b))
+        :effect (and (empty ?h) (clear ?b) (on ?b ?underb)
+            (not (clear ?underb)) (not (holding ?h ?b)))
+    )
+    (:action unstack
+        :parameters (?h ?b ?underb)
+        :precondition (and (hand ?h) (block ?b) (block ?underb)
+            (on ?b ?underb) (clear ?b) (empty ?h))
+        :effect (and (holding ?h ?b) (clear ?underb)
+            (not (on ?b ?underb)) (not (clear ?b)) (not (empty ?h)))
+    )
+)
+(define (problem untyped-blocks1)
+    (:domain untyped-blocksworld)
+    (:objects
+        H A B C
+    )
+    (:init
+        (hand H)
+        (block A)
+        (block B)
+        (block C)
+        (clear A)
+        (on A B)
+        (on B C)
+        (on-table C)
+        (empty H)
+    )
+    (:goal
+        (and (on C B) (on B A))
+    )
+)
