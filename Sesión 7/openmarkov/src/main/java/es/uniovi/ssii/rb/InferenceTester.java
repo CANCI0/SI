@@ -180,7 +180,7 @@ public class InferenceTester {
 	}
 
 	public static void printProbabilities(EvidenceCase evidence, List<Variable> variablesOfInterest,
-			Map<Variable, TablePotential> posteriorProbabilities) {
+										  Map<Variable, TablePotential> posteriorProbabilities) {
 
 		String evidenceString = "";
 		for (Finding finding : evidence.getFindings()) {
@@ -189,12 +189,13 @@ public class InferenceTester {
 
 		for (Variable variable : variablesOfInterest) {
 			TablePotential posteriorProbabilitiesPotential = posteriorProbabilities.get(variable);
-			System.out.format("%.5f;", posteriorProbabilitiesPotential.values[0]);
+			System.out.format("P( %s=%s | %s) = %.5f\n", variable, variable.getStates()[0].getName(), evidenceString,
+					posteriorProbabilitiesPotential.values[0]);
 		}
 	}
 
 	public static void printTime(long nanoseconds) {
-		System.out.format("%.2f", nanoseconds / 1000000.0);
+		System.out.format("Total time: %.2f miliseconds\n", nanoseconds / 1000000.0);
 	}
 
 	/**
@@ -246,34 +247,23 @@ public class InferenceTester {
 	}
 
 	public static void main(String[] args) throws Exception {
-
-		InferenceTester obj = new InferenceTester("Barley.pgmx");
+		InferenceTester obj = new InferenceTester("asia.pgmx");
 
 		System.out.format("Network \"%s\" with %d nodes and %d links\n", obj.getProbNet().getName(),
 				obj.getProbNet().getNumNodes(), obj.getProbNet().getLinks().size());
 
-		//Barley
-		EvidenceCase evidence1 = new EvidenceCase();
-		evidence1.addFinding(obj.probNet, "aks_m2", "350_450");
-		
-		List<Variable> variablesOfInterest = new ArrayList<>();
-		
-		variablesOfInterest.add(obj.probNet.getVariable("protein"));
-		variablesOfInterest.add(obj.probNet.getVariable("ksort"));
-		variablesOfInterest.add(obj.probNet.getVariable("tkv"));
-		variablesOfInterest.add(obj.probNet.getVariable("aks_vgt"));
-		variablesOfInterest.add(obj.probNet.getVariable("sort"));
-		variablesOfInterest.add(obj.probNet.getVariable("rokap"));
-		
-		for(int i = 0 ; i < 5 ; i++)
-			obj.LSInference(variablesOfInterest, evidence1);
+		// asking for P(Has bronchitis=no|Dyspnoea?=yes, Smoker?=No)
+		EvidenceCase evidence = new EvidenceCase();
+		evidence.addFinding(obj.probNet, "Positive X-ray?", "yes");
+		evidence.addFinding(obj.probNet, "Has tuberculosis", "yes");
+		List<Variable> variablesOfInterest = Collections.singletonList(obj.probNet.getVariable("Visit to Asia?"));
+		obj.LHInference(variablesOfInterest, evidence);
 
 		// random query
 //		obj.setSeed(9762L);
-//		evidence1 = obj.getRandomEvidence(2);
-//		variablesOfInterest = obj.getRandomVariablesOfInterest(1, evidence1);
-//
-//		obj.VEInference(variablesOfInterest, evidence1);
+//		evidence = obj.getRandomEvidence(2);
+//		variablesOfInterest = obj.getRandomVariablesOfInterest(1, evidence);
+
 	}
 
 }
